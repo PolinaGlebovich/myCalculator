@@ -15,7 +15,6 @@ public class InMemoryValidationStorage implements ValidationStorage{
 
     @Override
     public List<Validation> findAllByAuthorUsername(String username) {
-        System.out.println("username" + username);
         return validations.stream()
                 .filter(validation -> validation.getAuthor().getUsername().equals(username))
                 .toList();

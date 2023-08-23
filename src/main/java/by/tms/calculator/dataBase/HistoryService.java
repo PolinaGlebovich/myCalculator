@@ -2,30 +2,42 @@ package by.tms.calculator.dataBase;
 
 import by.tms.calculator.entity.Operation;
 import by.tms.calculator.entity.User;
+import by.tms.calculator.storage.OperationStorage;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HistoryService {
+public class HistoryService implements OperationStorage {
     private static final String INSERT_QUERY = "INSERT INTO operations (NUM1, NUM2, TYPE, RESULT, AUTHOR) values (?, ?, ?, ?, ?)";
-    private static final String FIND_BY_ID_QUERY = "SELECT * from MEDICINE where ID = ?";
+    private static final String FIND_BY_ID_QUERY = "SELECT * from operations where AUTHOR = ?";
 
-    public void save(Operation operation) throws SQLException, ClassNotFoundException {
-        Class.forName("com.mysql.jdbc.Driver");
-        Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/history", "root", "root");
-        PreparedStatement preparedStatement = connection.prepareStatement(INSERT_QUERY);
-        setOperationToPreparedStatement(operation, preparedStatement);
-        preparedStatement.executeUpdate();
-
+    public void save(Operation operation) {
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        try (Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/history", "root", "root");
+             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_QUERY)) {
+            setOperationToPreparedStatement(operation, preparedStatement);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public List<Operation> findAllByAuthorUsername(String author) throws ClassNotFoundException {
-        Class.forName("com.mysql.jdbc.Driver");
-       List<Operation> operations = new ArrayList<>();
+    @Override
+    public List<Operation> findAllByAuthorUsername(String username) {
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        List<Operation> operations = new ArrayList<>();
         try(Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/history", "root", "root");
             PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_ID_QUERY)) {
-            preparedStatement.setString(1, author);
+            preparedStatement.setString(1, username);
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
                 Operation operation = getOperationResultSet(rs);
@@ -34,8 +46,11 @@ public class HistoryService {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        System.out.println("operations " + operations);
         return operations;
     }
+
+
     private static Operation getOperationResultSet(ResultSet rs) throws SQLException {
         Operation operation = new Operation();
         operation.setNum1(rs.getDouble("NUM1"));

@@ -3,15 +3,18 @@ package by.tms.calculator.service;
 import by.tms.calculator.dataBase.HistoryService;
 import by.tms.calculator.entity.Operation;
 import by.tms.calculator.entity.User;
-
+import by.tms.calculator.storage.InMemoryOperationStorage;
+import by.tms.calculator.storage.OperationStorage;
+import org.w3c.dom.ls.LSOutput;
 
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-public class OperationService extends HistoryService {
+public class OperationService {
 
-  private final HistoryService operationStorage = new HistoryService();
+  private final OperationStorage operationStorage = new HistoryService();
+
 
   public Optional<Operation> calculate(double num1, double num2, String type, User author) throws SQLException, ClassNotFoundException {
     switch (type) {
@@ -66,5 +69,6 @@ public class OperationService extends HistoryService {
     public List<Operation> getHistory (User author) throws ClassNotFoundException {
       return operationStorage.findAllByAuthorUsername(author.getUsername());
     }
+
 }
 
